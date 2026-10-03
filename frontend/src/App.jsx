@@ -1,7 +1,11 @@
-import Home from "./pages/Home"
+import EmissaoSenha from "./pages/EmissaoSenha"; 
 
 function App() {
-  return <Home />;
+  return (
+    <div>
+      <EmissaoSenha />
+    </div>
+  );
 }
 
 export default App;
