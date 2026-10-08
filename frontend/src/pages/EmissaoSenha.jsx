@@ -4,9 +4,14 @@ function Senha() {
   const [senha, setSenha] = useState("");
   const [senhaEmitida, setSenhaEmitida] = useState("");
   const [fila, setFila] = useState([]);
-  const [numeroLaboratorio, setNumeroLaboratorio] = useState(0);
-  const [numeroClinica, setNumeroClinica] = useState(0);
+  const [numeros, setNumeros] = useState({
+    SP: 0,
+    SE: 0,
+    SG: 0
+  });
+
   const [senhaChamando, setSenhaChamando] = useState("");
+  const [ultimaSenhaFoiSP, setUltimaSenhaFoiSP] = useState(false);
 
   function emitirSenha() {
     if (senha === "") {
@@ -14,18 +19,13 @@ function Senha() {
       return;
     }
 
-    let numero;
-    let prefixo;
-
-    if (senha === "laboratorio") {
-      numero = numeroLaboratorio + 1;
-      prefixo = "L";
-      setNumeroLaboratorio(numero);
-    } else {
-      numero = numeroClinica + 1;
-      prefixo = "C";
-      setNumeroClinica(numero);
-    }
+   const numeroAtual = numeros[senha] + 1;
+   setNumeros({
+    ...numeros,
+    [senha]: numeroAtual
+   });
+   const prefixo= senha;
+   const numero = numeroAtual;
 
     const novaSenha = `${prefixo}${String(numero).padStart(3, "0")}`;
 
@@ -38,16 +38,37 @@ function Senha() {
   }
 
   function chamarProximaSenha() {
-    if (fila.length === 0) {
-      alert("Não há senhas na fila.");
-      return;
-    }
+ if (fila.length === 0) {
+ alert("Não há senhas na fila.");
+ return;
+ }
 
-    const proximaSenha = fila[0];
+ let indice;
 
-    setSenhaChamando(proximaSenha);
+ if (!ultimaSenhaFoiSP) {
+ indice = fila.findIndex((senha) => senha.startsWith("SP"));
 
-    setFila((filaAtual) => filaAtual.slice(1));
+ if (indice === -1) {
+ indice = 0;
+ }
+ } else {
+ indice = fila.findIndex((senha) => !senha.startsWith("SP"));
+
+ if (indice === -1) {
+ indice = 0;
+ }
+ }
+
+ const proximaSenha = fila[indice];
+
+ setSenhaChamando(proximaSenha);
+
+ setUltimaSenhaFoiSP(proximaSenha.startsWith("SP"));
+
+ setFila((filaAtual) =>
+ filaAtual.filter((_, i) => i !== indice)
+ );
+
   }
 
   return (
@@ -61,8 +82,9 @@ function Senha() {
         onChange={(e) => setSenha(e.target.value)}
       >
         <option value="">Selecione</option>
-        <option value="laboratorio">Laboratório</option>
-        <option value="clinica">Clínica</option>
+        <option value="SP">SP - Senha Prioritária</option>
+        <option value="SE">SE - Retirada de Exames</option>
+        <option value="SG">SG - Senha Geral</option>
       </select>
 
       <br />
@@ -83,9 +105,7 @@ function Senha() {
 
           <p>
             Atendimento:{" "}
-            {senha === "laboratorio"
-              ? "Laboratório"
-              : "Clínica"}
+            {senha}
           </p>
         </div>
       )}
@@ -102,8 +122,7 @@ function Senha() {
           <h2>Fila de atendimento</h2>
 
           {fila.map((senhaDaFila, index) => (
-            <p key={index}>{senhaDaFila} -{" "}
-            {senhaDaFila.startsWith("L") ? "Laboratório" : "Clínica"}
+            <p key={index}>{senhaDaFila}
             </p>
           ))}
         </div>
